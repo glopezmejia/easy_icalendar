@@ -13,7 +13,7 @@
 if ( ! defined('EASY_ICAL_NAME'))
 {
     define('EASY_ICAL_NAME',              'Easy iCalendar');
-    define('EASY_ICAL_VERSION',           '2.0.0');
+    define('EASY_ICAL_VERSION',           '2.0.1');
     define('EASY_ICAL_AUTHOR',            'Matthew Kirkpatrick');
     define('EASY_ICAL_AUTHOR_URL',        'https://github.com/javashakes');
     define('EASY_ICAL_DOCS',              'https://github.com/javashakes/easy_icalendar');
