@@ -52,7 +52,9 @@ class Easy_ical
         $timezone      = $this->escape(ee()->TMPL->fetch_param('timezone', 'America/New_York'));
         $calendar_name = $this->escape(ee()->TMPL->fetch_param('calendar_name', 'Save the Date!'));
         $content_type  = ee()->TMPL->fetch_param('content_type', 'text/calendar; charset=UTF-8');
-        $filename      = $this->escape(ee()->TMPL->fetch_param('filename', 'save-the-date'));
+        // Do not use escape() here: it folds lines at 60 chars for iCal bodies, which injects
+        // CRLF into the string and breaks the Content-Disposition header for long titles.
+        $filename      = $this->filename_for_disposition(ee()->TMPL->fetch_param('filename', 'save-the-date'));
 
         // capture event tag and trim away whitespace
         $tagdata       = trim(ee()->TMPL->tagdata);
@@ -139,6 +141,41 @@ class Easy_ical
         }
 
         return implode("\r\n ", $lines);
+    }
+
+    /**
+     * HELPER: safe basename for Content-Disposition (no iCal line folding or field escaping)
+     *
+     * @access  public
+     * @return  string
+    */
+    public function filename_for_disposition($str)
+    {
+        $str = preg_replace('/\<p\>/i', ' ', $str);
+        $str = preg_replace('/\<br\s*\/?\>/i', ' ', $str);
+        $str = strip_tags($str);
+        $str = trim(html_entity_decode($str, ENT_QUOTES, 'UTF-8'));
+
+        // single line, no header injection
+        $str = preg_replace('/\s+/u', ' ', $str);
+        // remove invisible/control characters from the string
+        $str = preg_replace('/[\x00-\x1F\x7F]/u', '', $str);
+
+        // characters invalid or risky in filenames / quoted HTTP params
+        $str = str_replace(array('"', '\\', '/', ':', '*', '?', '<', '>', '|'), '-', $str);
+        $str = trim($str, ' .-_');
+
+        if ($str === '') {
+            $str = 'save-the-date';
+        }
+
+        if (function_exists('mb_substr')) {
+            $str = mb_substr($str, 0, 200, 'UTF-8');
+        } else {
+            $str = substr($str, 0, 200);
+        }
+
+        return $str;
     }
 
     /**
