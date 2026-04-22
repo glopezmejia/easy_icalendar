@@ -54,6 +54,7 @@ Name for the generated iCalendar file
 
 - **Type:** string
 - **Default:** `save-the-date`
+- **Note (this fork):** The value is passed through `filename_for_disposition()` before it is used in the `Content-Disposition` header. That strips tags, removes control characters and characters illegal in common filenames, collapses whitespace to a single line, and caps length at 200 characters. It does **not** use the same iCalendar line-folding as other fields (see plugin code). If the result is empty after cleaning, the download name falls back to `save-the-date` (same as the original plugin default).
 
 ### `{exp:easy_ical:event}`
 
@@ -121,6 +122,11 @@ Needed if you update an entry with the same `uid`, otherwise iCal will not updat
 ```
 
 ## Changelog
+
+### 2.0.1 *(2026-04-21)*
+
+- Fixed long `filename` values breaking downloads (iCal `escape()` line folding is not used for `Content-Disposition` anymore)
+- Added `filename_for_disposition()` for download basename sanitization
 
 ### 2.0.0 *(2020-03-11)*
 
